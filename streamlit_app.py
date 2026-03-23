@@ -25,25 +25,33 @@ ingredient_list = st.multiselect(
     , my_dataframe
     , max_selections=5
 )
-if ingredient_list:    
-    
 
+
+# ... (código anterior igual)
+
+if ingredient_list:
     ingredients_string = ''
     for fruit_chosen in ingredient_list:
-        ingredients_string += ' ' + fruit_chosen + ' '    
-    st.write(ingredients_string)
+        ingredients_string += fruit_chosen + ' '
+    
+    # Quitamos el espacio sobrante al final
+    clean_ingredients = ingredients_string.strip()
 
-    ingredients_string = ingredients_string.strip()
+    # Construimos el insert asegurando que los nombres coincidan con tu tabla
+    my_insert_stmt = f"""insert into smoothies.public.orders(ingredients, name_on_order)
+            values ('{clean_ingredients}', '{name_on_order}')"""
     
-    my_insert_stmt = f""" insert into smoothies.public.orders(ingredients, name_on_order)
-      values ('{ingredients_string}', '{name_on_order}')"""     
-  
-    st.write(my_insert_stmt) 
-    
+    # OPCIONAL: Descomenta la línea de abajo para ver el SQL exacto en la app si falla
+    # st.write(my_insert_stmt)
+
     time_to_insert = st.button('Submit Order')
 
     if time_to_insert:
-        session.sql(my_insert_stmt).collect()
-        st.success('Smoothie ordered!', icon="✅")
+        if name_on_order: # Verificamos que no esté vacío
+            session.sql(my_insert_stmt).collect()
+            st.success(f'Your Smoothie "{name_on_order}" is ordered!', icon="✅")
+        else:
+            st.warning("Please add a name for the smoothie.")
+
 
 
