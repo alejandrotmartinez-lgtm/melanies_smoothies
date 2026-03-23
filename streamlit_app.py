@@ -32,13 +32,15 @@ if ingredient_list:
     for fruit_chosen in ingredient_list:
         ingredients_string += ' ' + fruit_chosen + ' '    
     st.write(ingredients_string)
-
+    
     my_insert_stmt = f"""insert into smoothies.public.orders(ingredients, name_on_order)
-            values ('{ingredients_string}', '{name_on_order}')"""
+        values ('{ingredients_string}', '{name_on_order}')"""
+        st.write(my_insert_stmt) 
     
     time_to_insert = st.button('Submit Order')
 
     if time_to_insert:
         session.sql(my_insert_stmt).collect()
-       # The f before the quotes lets you put variables in {brackets}
-        st.success(f'Your Smoothie "{name_on_order}" is ordered!', icon="✅")
+        st.success('Smoothie ordered!', icon="✅")
+
+
