@@ -54,7 +54,8 @@ from snowflake.snowpark.functions import col, when_matched
 
 st.title(f":apple: Pending Smoothie Order :strawberry:")
 
-session = get_active_session()
+cnx = st.connection("snowflake")
+session = cnx.session()
 
 # TRAER DATOS (Sin .collect())
 # .to_pandas() es clave aquí para que el editor de datos funcione bien
