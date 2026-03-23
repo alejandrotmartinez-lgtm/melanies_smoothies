@@ -47,3 +47,36 @@ if ingredient_list:
     if time_to_insert:
         session.sql(my_insert_stmt).collect()
         st.success(f'✅ Smoothie ordered, {name_on_order}!', icon="✅")
+
+import streamlit as st
+from snowflake.snowpark.context import get_active_session
+from snowflake.snowpark.functions import col, when_matched
+
+st.title(f":apple: Pending Smoothie Order :strawberry:")
+
+session = get_active_session()
+
+# TRAER DATOS (Sin .collect())
+# .to_pandas() es clave aquí para que el editor de datos funcione bien
+my_dataframe = session.table("smoothies.public.orders").filter(col("ORDER_FILLED") == 0).to_pandas()
+
+# EDITAR DATOS
+editable_df = st.data_editor(my_dataframe)
+
+submited = st.button('Submit')
+
+if submited:
+    try:
+        # Convertir el DataFrame de Pandas editado de vuelta a Snowpark
+        edited_dataset = session.create_dataframe(editable_df)
+        
+        og_dataset = session.table("smoothies.public.orders")
+        
+        # Realizar el MERGE
+        og_dataset.merge(edited_dataset
+                         , (og_dataset['ORDER_UID'] == edited_dataset['ORDER_UID'])
+                         , [when_matched().update({'ORDER_FILLED': edited_dataset['ORDER_FILLED']})]
+                        )
+        st.success('Order(s) Updated!', icon="👍")
+    except Exception as e:
+        st.error(f'Something went wrong: {e}')
